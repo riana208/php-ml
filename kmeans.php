@@ -44,7 +44,7 @@ class KMeansClustering
 
 	function __construct()
 	{
-		$this->observations_changed = true;
+		//$this->observations_changed = true;
 	}
 
 	
@@ -96,7 +96,7 @@ class KMeansClustering
 	{
 		if( !count($observations) ) return false;
 		$this->observations = array_values( $observations );
-		$this->observations_changed = true;
+		//$this->observations_changed = true;
 		return true;
 	}
 
@@ -112,8 +112,44 @@ class KMeansClustering
 		return true;
 	}
 
-	
 
+
+
+	public function clusterObservations( $times )
+	{
+
+		if( !isset($this->distance_func) || !isset($this->sum_func) ) return false;
+
+		$result = $this->Forgy();
+		if( !$result ) return false;
+		//Initial K-Means have been set, time to assign observations to clusters
+
+		$new_clusters = array();
+
+		foreach( $this->observations as $observation )
+		{
+		  $squareDifferences = array();
+		  for( $i = 0; $i < $this->k; ++$i )
+		  	 $squareDifferences[] = $this->distance_func($observation, $this->k_means[$i] );
+		  
+		  //Find minimum
+		  $lowest = $squareDifferences[0];
+		  $cluster_index = 0;	
+		  for( $i = 1; $i < $this->k; ++$i )	
+		  {
+		  	if( $squareDifferences[$i] < $lowest )
+		  		{
+		  			$lowest = $squareDifferences[$i];
+		  			$cluster_index = $i;
+		  		}
+		  }
+		  $new_clusters[$cluster_index][] = $observation;
+		}
+
+		//Observations have been assigned to clusters
+
+	}
+	
 
 	//function Forgy
 	//Description: used for randomly selecting k observations to be used as means.
@@ -142,8 +178,6 @@ class KMeansClustering
 	}
 
 
-
-	private $observations_changed; //If set to true then the values should be recalculated
 
 	private $distance_func; //function for finding the distance or difference between two observations
 	private $sum_func;	//function for finding the sum of two observations
