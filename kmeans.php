@@ -76,14 +76,14 @@ class KMeansClustering
 
 
 
-	//function setSumFunction
-	//Description: used to set the sum function which operates
+	//function setMeanFunction
+	//Description: used to set the mean function which operates
 	//on the observations during the process where the new means
 	//are found.
-	public function setSumFunction( $sum_func_name )
+	public function setMeanFunction( $mean_func_name )
 	{
-		if( !function_exists($sum_func_name) ) return false;
-		$this->sum_func = $sum_func_name;
+		if( !function_exists($mean_func_name) ) return false;
+		$this->mean_func = $mean_func_name;
 		return true;
 	}
 
@@ -124,30 +124,47 @@ class KMeansClustering
 		if( !$result ) return false;
 		//Initial K-Means have been set, time to assign observations to clusters
 
-		$new_clusters = array();
-
-		foreach( $this->observations as $observation )
+		while( true )
 		{
-		  $squareDifferences = array();
-		  for( $i = 0; $i < $this->k; ++$i )
-		  	 $squareDifferences[] = $this->distance_func($observation, $this->k_means[$i] );
-		  
-		  //Find minimum
-		  $lowest = $squareDifferences[0];
-		  $cluster_index = 0;	
-		  for( $i = 1; $i < $this->k; ++$i )	
-		  {
-		  	if( $squareDifferences[$i] < $lowest )
-		  		{
-		  			$lowest = $squareDifferences[$i];
-		  			$cluster_index = $i;
-		  		}
-		  }
-		  $new_clusters[$cluster_index][] = $observation;
+			$new_clusters = array();
+
+			foreach( $this->observations as $observation )
+			{
+			  $squareDifferences = array();
+			  for( $i = 0; $i < $this->k; ++$i )
+			  	 $squareDifferences[] = $this->distance_func($observation, $this->k_means[$i] );
+			  
+			  //Find minimum
+			  $lowest = $squareDifferences[0];
+			  $cluster_index = 0;	
+			  for( $i = 1; $i < $this->k; ++$i )	
+			  {
+			  	if( $squareDifferences[$i] < $lowest )
+			  		{
+			  			$lowest = $squareDifferences[$i];
+			  			$cluster_index = $i;
+			  		}
+			  }
+			  $new_clusters[$cluster_index][] = $observation;
+			}
+
+			//If $new_clusters is identical to the old clusters, then we should terminate the algorithm
+			if( isset($this->k_clusters) )
+				if( $new_clusters == $this->k_clusters ) break;
+
+			$this->k_clusters = $new_clusters;
+
+			//Clusters have changed, time to find new means
+
+			for( $i = 0; $i < $this->k; ++$i )
+			{
+				//Find the new mean from each cluster
+				$this->k_means[$i] = $this->mean_func( $this->k_clusters[$i] );
+			}
 		}
 
-		//Observations have been assigned to clusters
 
+		return $this->k_clusters;
 	}
 	
 
@@ -174,13 +191,13 @@ class KMeansClustering
 		foreach( $random_indexes as $index )
 			$this->k_means[] = $this->observations[ $index ];
 		
-		retrun true;
+		return true;
 	}
 
 
 
 	private $distance_func; //function for finding the distance or difference between two observations
-	private $sum_func;	//function for finding the sum of two observations
+	private $mean_func;	//function for finding the mean of a number of observations
 
 	private $observations; //a number of d-dimensional observations, guaranteed to have integer indexes
 	private $k; //number of clusters
@@ -188,6 +205,41 @@ class KMeansClustering
 	private $k_clusters; //k clusters of d-dimensional objects
 
 }
+
+
+
+
+//TEST CODE
+
+
+function r_distance( array $observation1, array $observation2 )
+{
+  $distance = pow(($observation1[0] - $observation2[0]),2) + pow($observation1[1]-$observation2[1],2) + 
+  			  pow(($observation1[2] - $observation2[2]),2);
+
+  return $distance;
+ }
+
+
+
+function r_mean( array $cluster )
+{
+
+
+	$mean = 0;
+	foreach( $cluster as $observation )
+	{
+		
+	}
+
+
+	return $mean;
+}
+
+$observations = array(  array(1,2,3), array(5,6,7), array(11,12,13) );
+
+
+
 
 
  ?>
