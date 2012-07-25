@@ -105,7 +105,7 @@ class KMeansClustering
 	//Description: used to add observations to the previous array of observations.
 	public function addObservations(  array $new_observations )
 	{
-		if( !count($observations) ) return false;
+		if( !count($new_observations) ) return false;
 		if( !isset( $this->observations ) ) $this->setObservations( $new_observations );
 		$merged_array = array_merge( $this->observations, $new_observations );
 		$this->setObservations( $merged_array );	
@@ -118,7 +118,13 @@ class KMeansClustering
 	public function clusterObservations( $times )
 	{
 
-		if( !isset($this->distance_func) || !isset($this->sum_func) ) return false;
+		if( !isset($this->distance_func) ) echo "distance function not set!\n";
+
+		if( !isset($this->mean_func) ) echo "mean function not set!\n";
+		if( !isset($this->distance_func) || !isset($this->mean_func) ) return false;
+
+		$distance_func = $this->distance_func;
+		$mean_func = $this->mean_func;
 
 		$result = $this->Forgy();
 		if( !$result ) return false;
@@ -127,12 +133,12 @@ class KMeansClustering
 		while( true )
 		{
 			$new_clusters = array();
-
+			echo "\nLooping\n";
 			foreach( $this->observations as $observation )
 			{
 			  $squareDifferences = array();
 			  for( $i = 0; $i < $this->k; ++$i )
-			  	 $squareDifferences[] = $this->distance_func($observation, $this->k_means[$i] );
+			  	 $squareDifferences[] = $distance_func($observation, $this->k_means[$i] );
 			  
 			  //Find minimum
 			  $lowest = $squareDifferences[0];
@@ -159,7 +165,7 @@ class KMeansClustering
 			for( $i = 0; $i < $this->k; ++$i )
 			{
 				//Find the new mean from each cluster
-				$this->k_means[$i] = $this->mean_func( $this->k_clusters[$i] );
+				$this->k_means[$i] = $mean_func( $this->k_clusters[$i] );
 			}
 		}
 
@@ -174,11 +180,8 @@ class KMeansClustering
 	//automatically in php as of version 4.2.0.
 	private function Forgy()
 	{
-		if( !isset($this->oberservations)  ||
-		    !is_array($this->observations) ||
-		    !isset($this->k) 
-		  )
-		   return false;
+
+		if( (!isset($this->observations))||(!is_array($this->observations))||(!isset($this->k))) return false;
 
 		//So after I write like 10 lines of code to find k distinct valid
 		//array indexes, I read about array_rand..
@@ -196,8 +199,8 @@ class KMeansClustering
 
 
 
-	private $distance_func; //function for finding the distance or difference between two observations
-	private $mean_func;	//function for finding the mean of a number of observations
+	public static $distance_func; //function for finding the distance or difference between two observations
+	public static $mean_func;	//function for finding the mean of a number of observations
 
 	private $observations; //a number of d-dimensional observations, guaranteed to have integer indexes
 	private $k; //number of clusters
@@ -226,19 +229,33 @@ function r_mean( array $cluster )
 {
 
 
-	$mean = 0;
+	$mean_observation = array(0,0,0);
 	foreach( $cluster as $observation )
 	{
-		
+		$mean_observation[0] += $observation[0];
+		$mean_observation[1] += $observation[1];
+		$mean_observation[2] += $observation[2];
 	}
 
+	$observation_count = count($cluster);
+	$mean_observation[0] /= $observation_count;
+	$mean_observation[1] /= $observation_count;
+	$mean_observation[2] /= $observation_count;
 
-	return $mean;
+	return $mean_observation;
 }
+
 
 $observations = array(  array(1,2,3), array(5,6,7), array(11,12,13) );
 
+$kmeans = new KMeansClustering();
+$kmeans->setDistanceFunction("r_distance");
+$kmeans->setMeanFunction("r_mean");
+$kmeans->setObservations($observations);
+$kmeans->setClusterCount(2);
+$clusters = $kmeans->clusterObservations(3);
 
+print_r($clusters);
 
 
 
