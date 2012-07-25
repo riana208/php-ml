@@ -214,7 +214,7 @@ class KMeansClustering
 
 //TEST CODE
 
-
+/*
 function r_distance( array $observation1, array $observation2 )
 {
   $distance = pow(($observation1[0] - $observation2[0]),2) + pow($observation1[1]-$observation2[1],2) + 
@@ -256,7 +256,7 @@ $kmeans->setClusterCount(2);
 $clusters = $kmeans->clusterObservations(3);
 
 print_r($clusters);
-
+*/
 
 
  ?>
